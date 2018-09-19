@@ -1,4 +1,4 @@
-package org.apereo.cas.adaptors.gauth;
+package org.apereo.cas;
 
 import org.apereo.cas.adaptors.gauth.credential.JpaGoogleAuthenticatorTokenCredentialRepositoryTests;
 import org.apereo.cas.adaptors.gauth.credential.MariaDbJpaGoogleAuthenticatorTokenCredentialRepositoryTests;

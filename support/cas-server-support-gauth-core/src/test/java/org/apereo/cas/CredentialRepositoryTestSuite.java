@@ -1,4 +1,8 @@
-package org.apereo.cas.adaptors.gauth.repository.credentials;
+package org.apereo.cas;
+
+import org.apereo.cas.adaptors.gauth.credential.InMemoryGoogleAuthenticatorTokenCredentialRepositoryTests;
+import org.apereo.cas.adaptors.gauth.credential.JsonGoogleAuthenticatorTokenCredentialRepositoryTests;
+import org.apereo.cas.adaptors.gauth.credential.RestGoogleAuthenticatorTokenCredentialRepositoryTests;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

@@ -3,7 +3,6 @@ package org.apereo.cas.adaptors.gauth.repository.credentials;
 import org.apereo.cas.CipherExecutor;
 import org.apereo.cas.authentication.OneTimeTokenAccount;
 import org.apereo.cas.configuration.model.support.mfa.GoogleAuthenticatorMultifactorProperties;
-import org.apereo.cas.otp.repository.credentials.BaseOneTimeTokenCredentialRepository;
 import org.apereo.cas.util.CollectionUtils;
 
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
@@ -31,16 +30,15 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Getter
-public class RestGoogleAuthenticatorTokenCredentialRepository extends BaseOneTimeTokenCredentialRepository {
+public class RestGoogleAuthenticatorTokenCredentialRepository extends BaseGoogleAuthenticatorTokenCredentialRepository {
 
-    private final IGoogleAuthenticator googleAuthenticator;
     private final transient RestTemplate restTemplate;
+
     private final GoogleAuthenticatorMultifactorProperties gauth;
 
     public RestGoogleAuthenticatorTokenCredentialRepository(final IGoogleAuthenticator googleAuthenticator, final RestTemplate restTemplate,
                                                             final GoogleAuthenticatorMultifactorProperties gauth, final CipherExecutor<String, String> tokenCredentialCipher) {
-        super(tokenCredentialCipher);
-        this.googleAuthenticator = googleAuthenticator;
+        super(tokenCredentialCipher, googleAuthenticator);
         this.restTemplate = restTemplate;
         this.gauth = gauth;
     }
@@ -79,12 +77,6 @@ public class RestGoogleAuthenticatorTokenCredentialRepository extends BaseOneTim
     public void save(final String userName, final String secretKey, final int validationCode, final List<Integer> scratchCodes) {
         val account = new GoogleAuthenticatorAccount(userName, secretKey, validationCode, scratchCodes);
         update(account);
-    }
-
-    @Override
-    public OneTimeTokenAccount create(final String username) {
-        val key = this.googleAuthenticator.createCredentials();
-        return new GoogleAuthenticatorAccount(username, key.getKey(), key.getVerificationCode(), key.getScratchCodes());
     }
 
     @Override

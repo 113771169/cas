@@ -1,11 +1,12 @@
 package org.apereo.cas.adaptors.gauth;
 
 import org.apereo.cas.CipherExecutor;
+import org.apereo.cas.adaptors.gauth.repository.credentials.BaseGoogleAuthenticatorTokenCredentialRepository;
 import org.apereo.cas.adaptors.gauth.repository.credentials.GoogleAuthenticatorAccount;
 import org.apereo.cas.authentication.OneTimeTokenAccount;
-import org.apereo.cas.otp.repository.credentials.BaseOneTimeTokenCredentialRepository;
 
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -30,18 +31,16 @@ import java.util.List;
 @Transactional(transactionManager = "transactionManagerGoogleAuthenticator")
 @Slf4j
 @ToString
-public class JpaGoogleAuthenticatorTokenCredentialRepository extends BaseOneTimeTokenCredentialRepository {
+@Getter
+public class JpaGoogleAuthenticatorTokenCredentialRepository extends BaseGoogleAuthenticatorTokenCredentialRepository {
     private static final String ENTITY_NAME = GoogleAuthenticatorAccount.class.getSimpleName();
-
-    private final IGoogleAuthenticator googleAuthenticator;
 
     @PersistenceContext(unitName = "googleAuthenticatorEntityManagerFactory")
     private transient EntityManager entityManager;
 
     public JpaGoogleAuthenticatorTokenCredentialRepository(final CipherExecutor<String, String> tokenCredentialCipher,
                                                            final IGoogleAuthenticator googleAuthenticator) {
-        super(tokenCredentialCipher);
-        this.googleAuthenticator = googleAuthenticator;
+        super(tokenCredentialCipher, googleAuthenticator);
     }
 
     @Override
@@ -81,12 +80,6 @@ public class JpaGoogleAuthenticatorTokenCredentialRepository extends BaseOneTime
     public void save(final String userName, final String secretKey, final int validationCode, final List<Integer> scratchCodes) {
         val r = new GoogleAuthenticatorAccount(userName, secretKey, validationCode, scratchCodes);
         update(r);
-    }
-
-    @Override
-    public OneTimeTokenAccount create(final String username) {
-        val key = this.googleAuthenticator.createCredentials();
-        return new GoogleAuthenticatorAccount(username, key.getKey(), key.getVerificationCode(), key.getScratchCodes());
     }
 
     @Override

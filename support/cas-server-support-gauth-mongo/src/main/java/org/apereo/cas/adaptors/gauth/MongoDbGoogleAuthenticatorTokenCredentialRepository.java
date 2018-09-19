@@ -1,11 +1,12 @@
 package org.apereo.cas.adaptors.gauth;
 
 import org.apereo.cas.CipherExecutor;
+import org.apereo.cas.adaptors.gauth.repository.credentials.BaseGoogleAuthenticatorTokenCredentialRepository;
 import org.apereo.cas.adaptors.gauth.repository.credentials.GoogleAuthenticatorAccount;
 import org.apereo.cas.authentication.OneTimeTokenAccount;
-import org.apereo.cas.otp.repository.credentials.BaseOneTimeTokenCredentialRepository;
 
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
+import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -27,8 +28,8 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @ToString
-public class MongoDbGoogleAuthenticatorTokenCredentialRepository extends BaseOneTimeTokenCredentialRepository {
-    private final IGoogleAuthenticator googleAuthenticator;
+@Getter
+public class MongoDbGoogleAuthenticatorTokenCredentialRepository extends BaseGoogleAuthenticatorTokenCredentialRepository {
     private final MongoOperations mongoTemplate;
     private final String collectionName;
 
@@ -36,8 +37,7 @@ public class MongoDbGoogleAuthenticatorTokenCredentialRepository extends BaseOne
                                                                final MongoOperations mongoTemplate,
                                                                final String collectionName,
                                                                final CipherExecutor<String, String> tokenCredentialCipher) {
-        super(tokenCredentialCipher);
-        this.googleAuthenticator = googleAuthenticator;
+        super(tokenCredentialCipher, googleAuthenticator);
         this.mongoTemplate = mongoTemplate;
         this.collectionName = collectionName;
     }
@@ -75,12 +75,6 @@ public class MongoDbGoogleAuthenticatorTokenCredentialRepository extends BaseOne
     public void save(final String userName, final String secretKey, final int validationCode, final List<Integer> scratchCodes) {
         val account = new GoogleAuthenticatorAccount(userName, secretKey, validationCode, scratchCodes);
         update(account);
-    }
-
-    @Override
-    public OneTimeTokenAccount create(final String username) {
-        val key = this.googleAuthenticator.createCredentials();
-        return new GoogleAuthenticatorAccount(username, key.getKey(), key.getVerificationCode(), key.getScratchCodes());
     }
 
     @Override

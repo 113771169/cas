@@ -22,19 +22,13 @@ import org.apereo.cas.config.support.CasWebApplicationServiceFactoryConfiguratio
 import org.apereo.cas.config.support.EnvironmentConversionServiceInitializer;
 import org.apereo.cas.config.support.authentication.GoogleAuthenticatorAuthenticationEventExecutionPlanConfiguration;
 import org.apereo.cas.logout.config.CasCoreLogoutConfiguration;
-import org.apereo.cas.otp.repository.credentials.OneTimeTokenCredentialRepository;
-import org.apereo.cas.util.CollectionUtils;
 import org.apereo.cas.util.SchedulingUtils;
 
-import lombok.val;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -43,11 +37,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.rules.SpringClassRule;
-import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import static org.junit.Assert.*;
 
 /**
  * Test cases for {@link JpaGoogleAuthenticatorTokenCredentialRepository}.
@@ -56,8 +46,9 @@ import static org.junit.Assert.*;
  * @since 5.0.0
  */
 @SpringBootTest(classes = {
-    JpaGoogleAuthenticatorTokenCredentialRepositoryTests.JpaTestConfiguration.class,
     GoogleAuthenticatorJpaConfiguration.class,
+    JpaGoogleAuthenticatorTokenCredentialRepositoryTests.JpaTestConfiguration.class,
+    GoogleAuthenticatorAuthenticationEventExecutionPlanConfiguration.class,
     CasCoreTicketsConfiguration.class,
     CasCoreTicketCatalogConfiguration.class,
     CasCoreLogoutConfiguration.class,
@@ -72,7 +63,6 @@ import static org.junit.Assert.*;
     CasPersonDirectoryConfiguration.class,
     CasCoreServicesConfiguration.class,
     CasWebApplicationServiceFactoryConfiguration.class,
-    GoogleAuthenticatorAuthenticationEventExecutionPlanConfiguration.class,
     CasCoreUtilConfiguration.class,
     CasCoreConfiguration.class,
     CasCoreAuthenticationServiceSelectionStrategyConfiguration.class,
@@ -84,47 +74,13 @@ import static org.junit.Assert.*;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableScheduling
 @ContextConfiguration(initializers = EnvironmentConversionServiceInitializer.class)
-public class JpaGoogleAuthenticatorTokenCredentialRepositoryTests {
-    @ClassRule
-    public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
-
-    @Rule
-    public final SpringMethodRule springMethodRule = new SpringMethodRule();
-
+public class JpaGoogleAuthenticatorTokenCredentialRepositoryTests extends AbstractGoogleAuthenticatorTokenCredentialRepositoryTests{
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    @Autowired
-    @Qualifier("googleAuthenticatorAccountRegistry")
-    private OneTimeTokenCredentialRepository registry;
-
     @Before
     public void cleanUp() {
-        registry.deleteAll();
-    }
-
-    @Test
-    public void verifySave() {
-        registry.save("uid", "secret", 143211, CollectionUtils.wrapList(1, 2, 3, 4, 5, 6));
-        val s = registry.get("uid");
-        assertEquals("secret", s.getSecretKey());
-        val c = registry.load();
-        assertFalse(c.isEmpty());
-    }
-
-    @Test
-    public void verifySaveAndUpdate() {
-        registry.save("casuser", "secret", 111222, CollectionUtils.wrapList(1, 2, 3, 4, 5, 6));
-        var s = registry.get("casuser");
-        assertNotNull(s.getRegistrationDate());
-        assertEquals(111222, s.getValidationCode());
-        assertEquals("secret", s.getSecretKey());
-        s.setSecretKey("newSecret");
-        s.setValidationCode(999666);
-        registry.update(s);
-        s = registry.get("casuser");
-        assertEquals(999666, s.getValidationCode());
-        assertEquals("newSecret", s.getSecretKey());
+        getRepository().deleteAll();
     }
 
     @TestConfiguration
